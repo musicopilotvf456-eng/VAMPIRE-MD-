@@ -1,0 +1,44 @@
+{
+  "name": "VAMPIRE-MD",
+  "description": "🧛‍♂️ Vampire-MD est un bot WhatsApp Multi-Device complet, pour la modération, l'automatisation et le fun dans vos groupes WhatsApp 🩸",
+  "repository": "https://github.com/musicopilotvf456-eng/VAMPIRE-MD-",
+  "logo": "https://files.catbox.moe/jvuqi0.jpg",
+  "keywords": [
+    "whatsapp",
+    "bot",
+    "multi-device",
+    "nodejs",
+    "baileys",
+    "automation"
+  ],
+  "env": {
+    "SESSION_ID": {
+      "description": "Colle ici ton ID de session généré",
+      "required": true
+    },
+    "OWNER_NUMBER": {
+      "description": "Ton numéro WhatsApp avec l'indicatif pays (ex: 226XXXXXXXX)",
+      "required": true
+    },
+    "PREFIX": {
+      "description": "Le préfixe des commandes (ex: !, /, .)",
+      "required": false,
+      "value": "!"
+    },
+    "LANGUAGE": {
+      "description": "Langue du bot (fr ou en)",
+      "required": false,
+      "value": "fr"
+    },
+    "AUTO_READ": {
+      "description": "Lire automatiquement les messages (true/false)",
+      "required": false,
+      "value": "true"
+    }
+  },
+  "buildpacks": [
+    {
+      "url": "heroku/nodejs"
+    }
+  ]
+}
