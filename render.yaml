@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: vampire-md
+    env: node
+    plan: free
+    branch: main
+    autoDeploy: true
+    region: frankfurt
+    buildCommand: "npm install"
+    startCommand: "node index.js"
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PREFIX
+        value: "!"
+      - key: OWNER
+        value: "+2376XXXXXXXX" # remplace par ton numéro
