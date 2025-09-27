@@ -4,7 +4,7 @@
 [![Status](https://img.shields.io/badge/Status-Online-brightgreen)]()
 [![watsapp channel](https://img.shields.io/badge/Join-channel-green?stylé=for-the-badge&logo=WhatsApp)](https://whatsapp.com/channel/0029VbAzuSxFi8xYWE9OMA2t)
 [![watsapp channel](https://img.shields.io/badge/Join-channel-green?stylé=for-the-badge&logo=WhatsApp)](https://whatsapp.com/channel/0029VbAa6L496H4MIUBrSD1K)
-
+[![element group](https://img.shields.io/badge/join-group-green?style=for-the-badge&logo=element-x)](https://matrix.to/#/%23lalalai:matrix.org)
 # 🧛‍♂️ VAMPIRE MD  
 
 > **VAMPIRE MD** est un puissant **bot WhatsApp Multi-device** construit avec [Baileys](https://github.com/WhiskeySockets/Baileys), conçu pour automatiser vos groupes et chats privés avec style.  
