@@ -23,9 +23,12 @@
 ✅ … et bien plus ⚡
 
 ---
-
-VAMPIRE-MD](https://files.catbox.moe/n74y03.mp4)
-## 🛠 Installation
+   
+  <br><br>
+  <img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=500&size=24&pause=1000&color=FFD700&center=true&vCenter=true&random=false&width=435&lines=VAMPIRE+MD+%F0%9F%94%A5;WhatsApp+Bot+by+JENIFER+Power+is+%F0%9F%92%AF;Built+For+you+%F0%9F%94%AB;Follow+And+Fork+My+Repo+please" alt="Typing SVG" />
+  <br>
+  
+   #installation
 
 ### 1️⃣ Cloner le projet
 ```bash
