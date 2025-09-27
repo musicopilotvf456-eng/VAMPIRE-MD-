@@ -2,6 +2,9 @@
 ![VAMPIRE-MD](https://files.catbox.moe/jvuqi0.jpg)
 [![Node.js](https://img.shields.io/badge/Node.js->=18.0.0-green?logo=node.js&logoColor=white)](https://nodejs.org/) 
 [![Status](https://img.shields.io/badge/Status-Online-brightgreen)]()
+[![watsapp channel](https://img.shields.io/badge/Join-channel-green?stylé=for-the-badge&logo=WhatsApp)](https://whatsapp.com/channel/0029VbAzuSxFi8xYWE9OMA2t)
+[![watsapp channel](https://img.shields.io/badge/Join-channel-green?stylé=for-the-badge&logo=WhatsApp)](https://whatsapp.com/channel/0029VbAa6L496H4MIUBrSD1K)
+
 # 🧛‍♂️ VAMPIRE MD  
 
 > **VAMPIRE MD** est un puissant **bot WhatsApp Multi-device** construit avec [Baileys](https://github.com/WhiskeySockets/Baileys), conçu pour automatiser vos groupes et chats privés avec style.  
@@ -28,7 +31,7 @@
   <img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=500&size=24&pause=1000&color=FFD700&center=true&vCenter=true&random=false&width=435&lines=VAMPIRE+MD+%F0%9F%94%A5;WhatsApp+Bot+by+JENIFER+Power+is+%F0%9F%92%AF;Built+For+you+%F0%9F%94%AB;Follow+And+Fork+My+Repo+please" alt="Typing SVG" />
   <br>
   
-   #installation
+   📥installation
 
 ### 1️⃣ Cloner le projet
 ```bash
@@ -132,4 +135,4 @@ Utilisez-le de manière responsable.
 
 ________________________________
 
-powered by Jenifer xm studio 
+♎powered by Jenifer xm studio🌐
