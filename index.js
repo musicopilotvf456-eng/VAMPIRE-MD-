@@ -1,6 +1,20 @@
-// index.js
-import fs from "fs";
-import path from "path";
+const makeWASocket = require("@whiskeysockets/baileys").default
+const { color } = require('./lib/color')
+const NodeCache = require("node-cache")
+const readline = require("readline")
+const pino = require('pino')
+const { Boom } = require('@hapi/boom')
+const yargs = require('yargs/yargs')
+const { handleMessages, handleGroupParticipantUpdate, handleStatus } = require('./main');
+const fs = require('fs')
+const chalk = require('chalk')
+const path = require('path')
+const axios = require('axios')
+const _ = require('lodash')
+const moment = require('moment-timezone')
+const PhoneNumber = require('awesome-phonenumber')
+const { imageToWebp, videoToWebp, writeExifImg, writeExifVid } = require('./lib/exif')
+const { smsg, isUrl, generateMessageTag, getBuffer, getSizeMedia, fetch, await, sleep, reSize } = require('./lib/myfunc')
 const { default: connConnect, getAggregateVotesInPollMessage, delay, PHONENUMBER_MCC, makeCacheableSignalKeyStore, useMultiFileAuthState, DisconnectReason, fetchLatestBaileysVersion, generateForwardMessageContent, prepareWAMessageMedia, generateWAMessageFromContent, generateMessageID, downloadContentFromMessage, makeInMemoryStore, jidDecode, proto } = require("@whiskeysockets/baileys")
 import pino from "pino";
 import logger from "./utils/logger.js";
