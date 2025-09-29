@@ -15,7 +15,7 @@ fs.readdirSync(path.join(__dirname, "../commands"))
 
 module.exports = async function handleCommand(client, message) {
   try {
-    const prefix = "!";
+    const prefix = ".";
     if (!message.body.startsWith(prefix)) return;
 
     const args = message.body.slice(prefix.length).trim().split(/ +/);
