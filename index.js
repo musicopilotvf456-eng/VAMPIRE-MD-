@@ -1,3 +1,4 @@
+const settings = require('./settingss');
 const makeWASocket = require("@whiskeysockets/baileys").default;
 const { color } = require('./lib/color');
 const NodeCache = require("node-cache");
