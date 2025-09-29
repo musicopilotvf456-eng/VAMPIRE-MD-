@@ -5,16 +5,48 @@ const readline = require("readline")
 const pino = require('pino')
 const { Boom } = require('@hapi/boom')
 const yargs = require('yargs/yargs')
-const fs = require('fs')
 const chalk = require('chalk')
-const path = require('path')
 const axios = require('axios')
 const _ = require('lodash')
 const moment = require('moment-timezone')
-const PhoneNumber = require('awesome-phonenumber')
 const { imageToWebp, videoToWebp, writeExifImg, writeExifVid } = require('./lib/exif')
 const { smsg, isUrl, generateMessageTag, getBuffer, getSizeMedia, fetch, await, sleep, reSize } = require('./lib/myfunc')
 const { default: connConnect, getAggregateVotesInPollMessage, delay, PHONENUMBER_MCC, makeCacheableSignalKeyStore, useMultiFileAuthState, DisconnectReason, fetchLatestBaileysVersion, generateForwardMessageContent, prepareWAMessageMedia, generateWAMessageFromContent, generateMessageID, downloadContentFromMessage, makeInMemoryStore, jidDecode, proto } = require("@whiskeysockets/baileys")
+
+const NodeCache = require("node-cache")
+// Using a lightweight persisted store instead of makeInMemoryStore (compat across versions)
+const { parsePhoneNumber } = require("libphonenumber-js")
+const { PHONENUMBER_MCC } = require('@whiskeysockets/baileys/lib/Utils/generics')
+const { rmSync, existsSync } = require('fs')
+const { join } = require('path')
+
+// Import lightweight store
+const store = require('./lib/lightweight_store')
+
+// Initialize store
+store.readFromFile()
+const settings = require('./settings')
+setInterval(() => store.writeToFile(), settings.storeWriteInterval || 10000)
+
+// Memory optimization - Force garbage collection if available
+setInterval(() => {
+    if (global.gc) {
+        global.gc()
+        console.log('🧹 Garbage collection completed')
+    }
+}, 60_000) // every 1 minute
+
+// Memory monitoring - Restart if RAM gets too high
+setInterval(() => {
+    const used = process.memoryUsage().rss / 1024 / 1024
+    if (used > 400) {
+        console.log('⚠️ RAM too high (>400MB), restarting bot...')
+        process.exit(1) // Panel will auto-restart
+    }
+}, 30_000) // check every 30 seconds
+
+let phoneNumber = "254104260236"
+let owner = JSON.parse(fs.readFileSync('./data/owner.json'))
 
 // Résolution des chemins
 const __filename = fileURLToPath(import.meta.url);
