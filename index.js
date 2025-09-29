@@ -45,9 +45,6 @@ setInterval(() => {
     }
 }, 30_000) // check every 30 seconds
 
-let phoneNumber = "254104260236"
-let owner = JSON.parse(fs.readFileSync('./data/owner.json'))
-
 // Résolution des chemins
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -72,8 +69,9 @@ for (const file of commandFiles) {
   }
 }
 
-const settings = require('./settings')
-let phoneNumber = "254792021944"
+
+let phoneNumber = "911234567890"
+let owner = JSON.parse(fs.readFileSync('./data/owner.json'))
 const pairingCode = !!phoneNumber || process.argv.includes("--pairing-code")
 const useMobile = process.argv.includes("--mobile")
 
