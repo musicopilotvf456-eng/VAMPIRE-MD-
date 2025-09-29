@@ -225,7 +225,7 @@ await delay(1999)
                     }
                 }
             });
-console.log(color('>June Md is Connected< [ ! ]','red'))
+console.log(color('>Vampire Md is Connected< [ ! ]','red'))
 		}
 	
 } catch (err) {
