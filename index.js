@@ -1,7 +1,6 @@
 const makeWASocket = require("@whiskeysockets/baileys").default
-const { color } = require('./lib/color')
-const NodeCache = require("node-cache")
-const readline = require("readline")
+const fs = require('fs');
+const path = require('path');
 const pino = require('pino')
 const { Boom } = require('@hapi/boom')
 const yargs = require('yargs/yargs')
@@ -10,15 +9,28 @@ const axios = require('axios')
 const _ = require('lodash')
 const moment = require('moment-timezone')
 const { imageToWebp, videoToWebp, writeExifImg, writeExifVid } = require('./lib/exif')
-const { smsg, isUrl, generateMessageTag, getBuffer, getSizeMedia, fetch, await, sleep, reSize } = require('./lib/myfunc')
-const { default: connConnect, getAggregateVotesInPollMessage, delay, PHONENUMBER_MCC, makeCacheableSignalKeyStore, useMultiFileAuthState, DisconnectReason, fetchLatestBaileysVersion, generateForwardMessageContent, prepareWAMessageMedia, generateWAMessageFromContent, generateMessageID, downloadContentFromMessage, makeInMemoryStore, jidDecode, proto } = require("@whiskeysockets/baileys")
+const { smsg, isUrl, generateMessageTag, getBuffer, getSizeMedia, sleep, reSize } = require('./lib/myfunc') // Fixed: removed 'fetch', 'await'
+const { 
+    default: makeWASocket, 
+    getAggregateVotesInPollMessage, 
+    delay, 
+    makeCacheableSignalKeyStore, 
+    useMultiFileAuthState, 
+    DisconnectReason, 
+    fetchLatestBaileysVersion, 
+    generateForwardMessageContent, 
+    prepareWAMessageMedia, 
+    generateWAMessageFromContent, 
+    generateMessageID, 
+    downloadContentFromMessage, 
+    jidDecode, 
+    proto,
+    jidNormalizedUser 
+} = require("@whiskeysockets/baileys") // Fixed: removed duplicate and incorrect imports
 
 const NodeCache = require("node-cache")
-// Using a lightweight persisted store instead of makeInMemoryStore (compat across versions)
-const { parsePhoneNumber } = require("libphonenumber-js")
-const { PHONENUMBER_MCC } = require('@whiskeysockets/baileys/lib/Utils/generics')
-const { rmSync, existsSync } = require('fs')
-const { join } = require('path')
+const readline = require("readline");
+const { color } = require('./lib/color'); // Added missing import
 
 // Import lightweight store
 const store = require('./lib/lightweight_store')
@@ -29,12 +41,12 @@ const settings = require('./settings')
 setInterval(() => store.writeToFile(), settings.storeWriteInterval || 10000)
 
 // Memory optimization - Force garbage collection if available
-setInterval(() => {
-    if (global.gc) {
+if (global.gc) {
+    setInterval(() => {
         global.gc()
         console.log('🧹 Garbage collection completed')
-    }
-}, 60_000) // every 1 minute
+    }, 60_000) // every 1 minute
+}
 
 // Memory monitoring - Restart if RAM gets too high
 setInterval(() => {
@@ -44,31 +56,6 @@ setInterval(() => {
         process.exit(1) // Panel will auto-restart
     }
 }, 30_000) // check every 30 seconds
-
-// Résolution des chemins
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-// Préfixe (modifiable via variable d'env ou défaut "!")
-const PREFIX = process.env.PREFIX || "!";
-
-// -------------------------
-// CHARGEMENT DES COMMANDES
-// -------------------------
-const commands = new Map();
-
-const commandsPath = path.join(__dirname, "commands");
-const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith(".js"));
-
-for (const file of commandFiles) {
-  const filePath = path.join(commandsPath, file);
-  const command = await import(`file://${filePath}`);
-  if (command.default && command.default.name) {
-    commands.set(command.default.name, command.default);
-    logger.info(`✅ Commande chargée : ${command.default.name}`);
-  }
-}
-
 
 let phoneNumber = "911234567890"
 let owner = JSON.parse(fs.readFileSync('./data/owner.json'))
@@ -81,60 +68,63 @@ const sessionDir = path.join(__dirname, 'session');
 const credsPath = path.join(sessionDir, 'creds.json');
 
 async function downloadSessionData() {
-  try {
+    try {
+        await fs.promises.mkdir(sessionDir, { recursive: true });
 
-    await fs.promises.mkdir(sessionDir, { recursive: true });
+        if (!fs.existsSync(credsPath)) {
+            if (!global.SESSION_ID) {
+                console.log(color(`Session id not found at SESSION_ID!\nCreds.json not found at session folder!\n\nWait to enter your number`, 'red'));
+                return false;
+            }
 
-    if (!fs.existsSync(credsPath)) {
-      if (!global.SESSION_ID) {
-        return console.log(color(`Session id not found at SESSION_ID!\nCreds.json not found at session folder!\n\nWait to enter your number`, 'red'));
-      }
+            const base64Data = global.SESSION_ID.split("dave~")[1];
+            if (!base64Data) {
+                console.log(color('Invalid SESSION_ID format', 'red'));
+                return false;
+            }
 
-      const base64Data = global.SESSION_ID.split("dave~")[1];
-      
-      const sessionData = Buffer.from(base64Data, 'base64');
-      
-        await fs.promises.writeFile(credsPath, sessionData);
-      console.log(color(`Session successfully saved, please wait!!`, 'green'));
-      await startconn();
+            const sessionData = Buffer.from(base64Data, 'base64');
+            await fs.promises.writeFile(credsPath, sessionData);
+            console.log(color(`Session successfully saved, please wait!!`, 'green'));
+            return true;
+        }
+        return true;
+    } catch (error) {
+        console.error('Error downloading session data:', error);
+        return false;
     }
-  } catch (error) {
-    console.error('Error downloading session data:', error);
-  }
 }
 
-
 async function startconn() {
-let { version, isLatest } = await fetchLatestBaileysVersion()
-const {  state, saveCreds } =await useMultiFileAuthState(`./session`)
-    const msgRetryCounterCache = new NodeCache() // for retry message, "waiting message"
+    let { version } = await fetchLatestBaileysVersion()
+    const { state, saveCreds } = await useMultiFileAuthState(`./session`)
+    const msgRetryCounterCache = new NodeCache()
+
     const conn = makeWASocket({
-        version: [2, 3000, 1023223821],
+        version, // Fixed: Use the fetched version instead of hardcoded
         logger: pino({ level: 'silent' }),
-        printQRInTerminal: !pairingCode, // popping up QR in terminal log
-      mobile: useMobile, // mobile api (prone to bans)
-      browser: [ "Ubuntu", "Chrome", "20.0.04" ], // for this issues https://github.com/WhiskeySockets/Baileys/issues/328
-     auth: {
-         creds: state.creds,
-         keys: makeCacheableSignalKeyStore(state.keys, pino({ level: "fatal" }).child({ level: "fatal" })),
-      },
-      markOnlineOnConnect: true, // set false for offline
-      generateHighQualityLinkPreview: true, // make high preview link
-      getMessage: async (key) => {
-         let jid = jidNormalizedUser(key.remoteJid)
-         let msg = await store.loadMessage(jid, key.id)
+        printQRInTerminal: !pairingCode,
+        mobile: useMobile,
+        browser: ["Ubuntu", "Chrome", "20.0.04"],
+        auth: {
+            creds: state.creds,
+            keys: makeCacheableSignalKeyStore(state.keys, pino({ level: "fatal" }).child({ level: "fatal" })),
+        },
+        markOnlineOnConnect: true,
+        generateHighQualityLinkPreview: true,
+        getMessage: async (key) => {
+            let jid = jidNormalizedUser(key.remoteJid)
+            let msg = await store.loadMessage(jid, key.id)
+            return msg?.message || ""
+        },
+        msgRetryCounterCache,
+        defaultQueryTimeoutMs: undefined,
+    })
 
-         return msg?.message || ""
-      },
-      msgRetryCounterCache, // Resolve waiting messages
-      defaultQueryTimeoutMs: undefined, // for this issues https://github.com/WhiskeySockets/Baileys/issues/276
-   })
-   
-   store.bind(conn.ev)
+    store.bind(conn.ev)
 
-    // login use pairing code
-   // source code https://github.com/WhiskeySockets/Baileys/blob/master/Example/example.ts#L61
-        if (pairingCode && !conn.authState.creds.registered) {
+    // Pairing code logic
+    if (pairingCode && !conn.authState.creds.registered) {
         if (useMobile) throw new Error('Cannot use pairing code with mobile api')
 
         let phoneNumber
@@ -164,61 +154,64 @@ const {  state, saveCreds } =await useMultiFileAuthState(`./session`)
             }
         }, 3000)
     }
-    store?.bind(conn.ev)
-conn.ev.on('connection.update', async (update) => {
-	const {
-        
-		connection,
-		lastDisconnect
-	} = update
-try{
-		if (connection === 'close') {
-			let reason = new Boom(lastDisconnect?.error)?.output.statusCode
-			if (reason === DisconnectReason.badSession) {
-				console.log(`Bad Session File, Please Delete Session and Scan Again`);
-				startconn()
-			} else if (reason === DisconnectReason.connectionClosed) {
-				console.log("Connection closed, reconnecting....");
-				startconn();
-			} else if (reason === DisconnectReason.connectionLost) {
-				console.log("Connection Lost from Server, reconnecting...");
-				startconn();
-			} else if (reason === DisconnectReason.connectionReplaced) {
-				console.log("Connection Replaced, Another New Session Opened, Please Close Current Session First");
-				startconn()
-			} else if (reason === DisconnectReason.loggedOut) {
-				console.log(`Device Logged Out, Please Delete Session and Scan Again.`);
-				startconn();
-			} else if (reason === DisconnectReason.restartRequired) {
-				console.log("Restart Required, Restarting...");
-				startconn();
-			} else if (reason === DisconnectReason.timedOut) {
-				console.log("Connection TimedOut, Reconnecting...");
-				conn();
-			} else conn.end(`Unknown DisconnectReason: ${reason}|${connection}`)
-		}
-		if (update.connection == "connecting" || update.receivedPendingNotifications == "false") {
-			console.log(color(`\nConnecting...`, 'white'))
-		}
-		if (update.connection == "open" || update.receivedPendingNotifications == "true") {
-			console.log(color(` `,'magenta'))
-            console.log(color(`Connected to => ` + JSON.stringify(conn.user, null, 2), 'green'))
-await delay(1999)	
-  } else if (connection === 'open') {
-  console.log('🧬 Installing Plugins')
-  const path = require('path');
-  fs.readdirSync("./plugins/").forEach((plugin) => {
-  if (path.extname(plugin).toLowerCase() == ".js") {
-  require("./plugins/" + plugin);
-  }
-  });
-  console.log('Plugins installed successful ✅')
-  console.log('Bot connected to whatsapp ✅')
-            
+
+    store.bind(conn.ev)
+
+    conn.ev.on('connection.update', async (update) => {
+        const { connection, lastDisconnect } = update
+        try {
+            if (connection === 'close') {
+                let reason = new Boom(lastDisconnect?.error)?.output.statusCode
+                if (reason === DisconnectReason.badSession) {
+                    console.log(`Bad Session File, Please Delete Session and Scan Again`);
+                    startconn()
+                } else if (reason === DisconnectReason.connectionClosed) {
+                    console.log("Connection closed, reconnecting....");
+                    startconn();
+                } else if (reason === DisconnectReason.connectionLost) {
+                    console.log("Connection Lost from Server, reconnecting...");
+                    startconn();
+                } else if (reason === DisconnectReason.connectionReplaced) {
+                    console.log("Connection Replaced, Another New Session Opened, Please Close Current Session First");
+                    startconn()
+                } else if (reason === DisconnectReason.loggedOut) {
+                    console.log(`Device Logged Out, Please Delete Session and Scan Again.`);
+                    startconn();
+                } else if (reason === DisconnectReason.restartRequired) {
+                    console.log("Restart Required, Restarting...");
+                    startconn();
+                } else if (reason === DisconnectReason.timedOut) {
+                    console.log("Connection TimedOut, Reconnecting...");
+                    startconn();
+                } else {
+                    conn.end(`Unknown DisconnectReason: ${reason}|${connection}`)
+                }
+            }
+
+            if (update.connection == "connecting" || update.receivedPendingNotifications == "false") {
+                console.log(color(`\nConnecting...`, 'white'))
+            }
+
+            if (update.connection == "open" || update.receivedPendingNotifications == "true") {
+                console.log(color(` `,'magenta'))
+                console.log(color(`Connected to => ` + JSON.stringify(conn.user, null, 2), 'green'))
+                
+                await delay(1999)
+
+                // Load plugins
+                console.log('🧬 Installing Plugins')
+                const pluginPath = require('path');
+                fs.readdirSync("./plugins/").forEach((plugin) => {
+                    if (pluginPath.extname(plugin).toLowerCase() == ".js") {
+                        require("./plugins/" + plugin);
+                    }
+                });
+                console.log('Plugins installed successful ✅')
+                console.log('Bot connected to whatsapp ✅')
+
                 const botNumber = conn.user.id.split(':')[0] + '@s.whatsapp.net';
-            await conn.sendMessage(botNumber, { 
-                text: 
-                `
+                await conn.sendMessage(botNumber, { 
+                    text: `
 ┏❐═⭔ *CONNECTED* ⭔═❐
 ┃⭔ *Bot:* VAMPIRE MD
 ┃⭔ *Time:* ${new Date().toLocaleString()}
