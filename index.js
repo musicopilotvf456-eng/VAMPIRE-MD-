@@ -198,17 +198,17 @@ async function startconn() {
                 
                 await delay(1999)
 
-                // Load plugins
-                console.log('🧬 Installing Plugins')
-                const pluginPath = require('path');
-                fs.readdirSync("./plugins/").forEach((plugin) => {
-                    if (pluginPath.extname(plugin).toLowerCase() == ".js") {
-                        require("./plugins/" + plugin);
-                    }
-                });
-                console.log('Plugins installed successful ✅')
-                console.log('Bot connected to whatsapp ✅')
-
+                // Load commands
+console.log('🧬 Loading Commands')
+const commandPath = require('path');
+fs.readdirSync("./commands/").forEach((commandFile) => {
+    if (commandPath.extname(commandFile).toLowerCase() == ".js") {
+        require("./commands/" + commandFile); // Fixed: "commands" instead of "commans"
+        console.log(`✅ Loaded command: ${commandFile}`);
+    }
+});
+console.log('Commands loaded successfully ✅')
+console.log('Bot connected to WhatsApp ✅')
                 const botNumber = conn.user.id.split(':')[0] + '@s.whatsapp.net';
                 await conn.sendMessage(botNumber, { 
                     text: `
