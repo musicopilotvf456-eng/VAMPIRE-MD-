@@ -204,6 +204,16 @@ try{
 			console.log(color(` `,'magenta'))
             console.log(color(`Connected to => ` + JSON.stringify(conn.user, null, 2), 'green'))
 await delay(1999)	
+  } else if (connection === 'open') {
+  console.log('🧬 Installing Plugins')
+  const path = require('path');
+  fs.readdirSync("./plugins/").forEach((plugin) => {
+  if (path.extname(plugin).toLowerCase() == ".js") {
+  require("./plugins/" + plugin);
+  }
+  });
+  console.log('Plugins installed successful ✅')
+  console.log('Bot connected to whatsapp ✅')
             
                 const botNumber = conn.user.id.split(':')[0] + '@s.whatsapp.net';
             await conn.sendMessage(botNumber, { 
