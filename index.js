@@ -1,36 +1,22 @@
-const makeWASocket = require("@whiskeysockets/baileys").default
-const fs = require('fs');
-const path = require('path');
-const pino = require('pino')
-const { Boom } = require('@hapi/boom')
-const yargs = require('yargs/yargs')
-const chalk = require('chalk')
-const axios = require('axios')
-const _ = require('lodash')
-const moment = require('moment-timezone')
-const { imageToWebp, videoToWebp, writeExifImg, writeExifVid } = require('./lib/exif')
-const { smsg, isUrl, generateMessageTag, getBuffer, getSizeMedia, sleep, reSize } = require('./lib/myfunc') // Fixed: removed 'fetch', 'await'
-const { 
-    default: makeWASocket, 
-    getAggregateVotesInPollMessage, 
-    delay, 
-    makeCacheableSignalKeyStore, 
-    useMultiFileAuthState, 
-    DisconnectReason, 
-    fetchLatestBaileysVersion, 
-    generateForwardMessageContent, 
-    prepareWAMessageMedia, 
-    generateWAMessageFromContent, 
-    generateMessageID, 
-    downloadContentFromMessage, 
-    jidDecode, 
-    proto,
-    jidNormalizedUser 
-} = require("@whiskeysockets/baileys") // Fixed: removed duplicate and incorrect imports
-
-const NodeCache = require("node-cache")
+const makeWASocket = require("@whiskeysockets/baileys").default;
+const { color } = require('./lib/color');
+const NodeCache = require("node-cache");
 const readline = require("readline");
-const { color } = require('./lib/color'); // Added missing import
+const pino = require('pino');
+const { Boom } = require('@hapi/boom');
+const yargs = require('yargs/yargs');
+const { handleMessages, handleGroupParticipantUpdate, handleStatus } = require('./main');
+const fs = require('fs');
+const chalk = require('chalk');
+const path = require('path');
+const axios = require('axios');
+const _ = require('lodash');
+const moment = require('moment-timezone');
+const PhoneNumber = require('awesome-phonenumber');
+const { imageToWebp, videoToWebp, writeExifImg, writeExifVid } = require('./lib/exif');
+const { smsg, isUrl, generateMessageTag, getBuffer, getSizeMedia, sleep, reSize } = require('./lib/myfunc');
+const { getAggregateVotesInPollMessage, delay, makeCacheableSignalKeyStore, useMultiFileAuthState, DisconnectReason, fetchLatestBaileysVersion, downloadContentFromMessage, jidDecode } = require("@whiskeysockets/baileys");
+
 
 // Import lightweight store
 const store = require('./lib/lightweight_store')
