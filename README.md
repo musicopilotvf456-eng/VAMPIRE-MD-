@@ -136,3 +136,4 @@ Utilisez-le de manière responsable.
 ________________________________
 
 ♎powered by Jenifer xm studio🌐
+partenaire={empreror dave}
